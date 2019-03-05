@@ -1,0 +1,69 @@
+//RecallMiner-Recall
+//Author: Fleekix
+//Title: FleekixRecallMiner
+//For use with fire beetle
+//re-write of autorecallminer by experience
+//*****************************************************************************
+//Recall
+//*****************************************************************************
+//Check flags for 'danger', 'full', or 'supply' and recall home if so
+if @inlist 'controlz' 'danger'
+  @poplist 'runez' 'front'
+  if mana > '12'
+    autotargetobject 'homebook'
+    cast 'recall'
+  else
+    useskill 'meditation'
+    while mana < '12'
+    endwhile
+    replay
+  endif
+elseif @inlist 'controlz' 'full'
+  if mana > '12'
+    autotargetobject 'homebook'
+    cast 'recall'
+  else
+    useskill 'meditation'
+    while mana < '12'
+    endwhile
+    replay
+  endif
+elseif @inlist 'controlz' 'supply'
+  if mana > '12'
+    autotargetobject 'homebook'
+    cast 'recall'
+  else
+    useskill 'meditation'
+    while mana < '12'
+    endwhile
+    replay
+  endif
+else
+  //otherwise recall the next spot in the rune list
+  if mana > '12'
+    if @inlist 'controlz' 'next'
+      @poplist 'runez' 'front'
+      @poplist! 'controlz' 'next'
+      @clearlist 'ecountz'
+    endif
+    useobject bookz[0]
+    waitforgump 0x554b87f3 5000
+    replygump 0x554b87f3 runez[0]
+    if list 'runez' == 0
+      @poplist 'bookz' 'front'
+    endif
+  else
+    useskill 'meditation'
+    if not @inlist 'controlz' 'home'
+      while mana < 12
+      endwhile
+      replay
+    else
+      while mana < maxmana
+      endwhile
+      replay
+    endif
+  endif
+endif
+playmacro 'rmmain'
+

@@ -1,0 +1,105 @@
+//RecallMiner-GetOre
+//Author: Fleekix
+//Title: FleekixRecallMiner
+//For use with fire beetle
+//re-write of autorecallminer by experience
+//*****************************************************************************
+//GetOre
+//*****************************************************************************
+//Smelt ore into ingots if we have any
+if mounted
+  togglemounted
+  msg 'all follow me'
+endif
+for 0 to 'orez'
+  while @findtype 'orez[]' 'any' 'backpack' 'any' '2'
+    if not @injournal 'metal-bearing' 'system'
+      @autotargetobject 'beetle'
+      @useobject  'found'
+      @clearjournal
+    else
+      @clearjournal
+      @ignoreobject 'found'
+      @unsetalias 'found'
+      break
+    endif
+  endwhile
+endfor
+//Start mining
+if @findtype 0xe86 'any' 'backpack' or @findtype 0xf39 'any' 'backpack'
+  useobject 'found'
+else
+  pushlist! 'controlz' 'supply'
+  playmacro 'rmmain'
+endif
+waitfortarget 500
+if direction == 0
+  targettileoffset 0 -1 0
+elseif direction == 1
+  targettileoffset 1 -1 0
+elseif direction == 2
+  targettileoffset 1 0 0
+elseif direction == 3
+  targettileoffset 1 1 0
+elseif direction == 4
+  targettileoffset 0 1 0
+elseif direction == 5
+  targettileoffset -1 1 0
+elseif direction == 6
+  targettileoffset -1 0 0
+elseif direction == 7
+  targettileoffset -1 -1 0
+endif
+pause 200
+if @findtype 0xe86 'any' 'backpack' or @findtype 0xf39 'any' 'backpack'
+  useobject 'found'
+else
+  pushlist! 'controlz' 'supply'
+  playmacro 'rmmain'
+endif
+waitfortarget 500
+if direction == 1
+  targettileoffset 0 -1 0
+elseif direction == 2
+  targettileoffset 1 -1 0
+elseif direction == 3
+  targettileoffset 1 0 0
+elseif direction == 4
+  targettileoffset 1 1 0
+elseif direction == 5
+  targettileoffset 0 1 0
+elseif direction == 6
+  targettileoffset -1 1 0
+elseif direction == 7
+  targettileoffset -1 0 0
+elseif direction == 0
+  targettileoffset -1 -1 0
+endif
+pause 200
+if @findtype 0xe86 'any' 'backpack' or @findtype 0xf39 'any' 'backpack'
+  useobject 'found'
+else
+  pushlist! 'controlz' 'supply'
+  playmacro 'rmmain'
+endif
+waitfortarget 500
+if direction == 7
+  targettileoffset 0 -1 0
+elseif direction == 0
+  targettileoffset 1 -1 0
+elseif direction == 1
+  targettileoffset 1 0 0
+elseif direction == 2
+  targettileoffset 1 1 0
+elseif direction == 3
+  targettileoffset 0 1 0
+elseif direction == 4
+  targettileoffset -1 1 0
+elseif direction == 5
+  targettileoffset -1 0 0
+elseif direction == 6
+  targettileoffset -1 -1 0
+endif
+pause 10
+playmacro 'rmmain'
+

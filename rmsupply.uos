@@ -1,0 +1,75 @@
+//RecallMiner-Supply
+//Author: Fleekix
+//Title: FleekixRecallMiner
+//For use with fire beetle
+//re-write of autorecallminer by experience
+//*****************************************************************************
+//Supply
+//*****************************************************************************
+//Check for home flag
+//If home flag set, then run organizer "rmsupply" to restock
+@poplist! 'controlz' 'supply'
+if @inlist 'controlz' 'home'
+  //ingots
+  if not @counttype '0x1bf2' '0' 'supplybag' > 4
+    @useobject 'ingotbox'
+    if @findtype '0x1bf2' '0' 'ingotbox'
+      @moveitem 'found' 'supplybag' 0 0 0 20
+    endif
+  endif
+  //mandrake
+  while @counttype '0xf86' '0' 'regbag' < 20
+    @useobject 'supplybox'
+    if @findtype '0xf86' '0' 'supplybox'
+      @moveitem 'found' 'regbag' 0 0 0 80
+    endif
+  endwhile
+  //blackpearl
+  while @counttype '0xf7a' '0' 'regbag' < 20
+    @useobject 'supplybox'
+    if @findtype '0xf7a' '0' 'supplybox'
+      @moveitem 'found' 'regbag' 0 0 0 80
+    endif
+  endwhile
+  //bloodmoss
+  while @counttype '0xf7b' '0' 'regbag' < 20
+    @useobject 'supplybox'
+    if @findtype '0xf7b' '0' 'supplybox'
+      @moveitem 'found' 'regbag' 0 0 0 80
+    endif
+  endwhile
+  //tools
+  if @counttype '0x1eb8' '0' 'supplybag' < 3
+    @useobject 'supplybox'
+    if @findtype '0x1eb8' '0' 'supplybox'
+      @moveitem 'found' 'supplybag'
+    endif
+  endif
+endif
+//If no pick found make a new pick
+if not findtype '0xe86' 'any' 'backpack'
+  @usetype '0x1eb8' '0' 'supplybag'
+  waitforgump 0x38920abd 15000
+  replygump 0x38920abd 8
+  waitforgump 0x38920abd 15000
+  replygump 0x38920abd 114
+  waitforgump 0x38920abd 15000
+  replygump 0x38920abd 0
+endif
+//*****************************************************************************
+//DropOff
+//*****************************************************************************
+//Drop off ingots
+if @inlist 'controlz' 'home'
+  while @findtype '0x1bf2' 'any' 'backpack' 'any' '0'
+    @moveitem 'found' 'ingotbox'
+    pause 100
+  endwhile
+  //Drop off granite
+  while @findtype '0x1779' 'any' 'backpack'
+    @moveitem 'found' 'stonebox'
+    pause 100
+  endwhile
+endif
+playmacro 'rmmain'
+

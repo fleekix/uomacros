@@ -1,0 +1,230 @@
+//Author: Fleekix
+//Title: FleekixRecallMiner
+//For use with fire beetle
+//re-write of autorecallminer by experience
+//*****************************************************************************
+//Intialize aliases
+//*****************************************************************************
+if not @findalias 'homebook'
+  promptalias 'homebook'
+endif
+if not @findalias 'book1'
+  promptalias 'book1'
+endif
+if not @findalias 'book2'
+  promptalias 'book2'
+endif
+if not @findalias 'book3'
+  promptalias 'book3'
+endif
+if not @findalias 'ingotbox'
+  promptalias 'ingotbox'
+endif
+if not @findalias 'stonebox'
+  promptalias 'stonebox'
+endif
+if not @findalias 'supplybox'
+  promptalias 'supplybox'
+endif
+if not @findalias 'supplybag'
+  promptalias 'supplybag'
+endif
+if not @findalias 'regbag'
+  promptalias 'regbag'
+endif
+if not @findalias 'beetle'
+  promptalias 'beetle'
+endif
+//*****************************************************************************
+//Initialize lists
+//*****************************************************************************
+//runez is a list of each rune in a specific runebook
+if not listexists 'runez'
+  createlist 'runez'
+endif
+if list 'runez' == 0
+  @pushlist 'runez' 5  //1
+  @pushlist 'runez' 11 //2
+  @pushlist 'runez' 17 //3
+  @pushlist 'runez' 23 //4
+  @pushlist 'runez' 29 //5
+  @pushlist 'runez' 35 //6
+  @pushlist 'runez' 41 //7
+  @pushlist 'runez' 47 //8
+  @pushlist 'runez' 53 //9
+  @pushlist 'runez' 59 //10
+  @pushlist 'runez' 65 //11
+  @pushlist 'runez' 71 //12
+  @pushlist 'runez' 77 //13
+  @pushlist 'runez' 83 //14
+  @pushlist 'runez' 89 //15
+  @pushlist 'runez' 95 //16
+endif
+//bookz is a list of each runebook filled with mining spots
+if not listexists 'bookz'
+  createlist 'bookz'
+endif
+if list 'bookz' == 0
+  @pushlist 'bookz' 'book1'
+  @pushlist 'bookz' 'book2'
+  @pushlist 'bookz' 'book3'
+endif
+//orez is a list of each graphic of ore types
+if not listexists 'orez'
+  createlist 'orez'
+  @pushlist 'orez' 0x19ba
+  @pushlist 'orez' 0x19b7
+  @pushlist 'orez' 0x19b8
+  @pushlist 'orez' 0x19b9
+endif
+//controlz is for certain conditions to be kept track of during mining operations
+//danger, home, pick, supply, full
+if not @listexists 'controlz'
+  @createlist 'controlz'
+endif
+if not @listexists 'ecountz'
+  @createlist 'ecountz'
+endif
+//errorz is for mining error text for journal checking
+if not listexists 'errorz'
+  createlist 'errorz'
+  @pushlist 'errorz' "There is no metal here to mine"
+  @pushlist 'errorz' "You can't mine here"
+  @pushlist 'errorz' "You can't mine there"
+  @pushlist 'errorz' "Target cannot be seen"
+  @pushlist 'errorz' "You can't mine that"
+  @pushlist 'errorz' "That location is blocked"
+endif
+//supplyz is for supply related journal checking
+if not listexists 'supplyz'
+  createlist 'supplyz'
+  @pushlist 'supplyz' "" //supplyz[0]
+  @pushlist 'supplyz' "" //supplyz[1]
+  @pushlist 'supplyz' "" //supplyz[2]
+  @pushlist 'supplyz' "" //supplyz[3]
+endif
+//*****************************************************************************
+//Status management
+//*****************************************************************************
+//Check location and set flag
+//These coords are specific to the drop off spot
+if x == 2008 and y == 761
+  @pushlist! 'controlz' 'home'
+else
+  @poplist! 'controlz' 'home'
+endif
+//Check for danger if not at home (home is presumably safe)
+if not @inlist 'controlz' 'home'
+  getenemy 'murderer' 'criminal'
+  if @inrange 'enemy' 10
+    @pushlist! 'controlz' 'danger'
+  else
+    @poplist! 'controlz' 'danger'
+  endif
+endif
+if @inlist 'controlz' 'home'
+  @poplist! 'controlz' 'danger'
+endif
+//Check ingot count if more than 500 set full flag
+if counttype '0x1bf2' 'any' 'backpack' > 500
+  @pushlist! 'controlz' 'full'
+elseif weight > 370
+  @pushlist! 'controlz' 'full'
+else
+  @poplist! 'controlz' 'full'
+endif
+//Check ingots
+if @counttype '0x1bf2' '0' 'supplybag' < 4
+  @pushlist! 'controlz' 'supply'
+endif
+//Check regs
+if @counttype '0xf86' '0' 'regbag' < 5
+  @pushlist! 'controlz' 'supply'
+endif
+if @counttype '0xf7a' '0' 'regbag' < 5
+  @pushlist! 'controlz' 'supply'
+endif
+if @counttype '0xf7b' '0' 'regbag' < 5
+  @pushlist! 'controlz' 'supply'
+endif
+//Check for tools
+if not @findtype '0x1eb8' '0' 'supplybag'
+  @pushlist! 'controlz' 'supply'
+endif
+//Check for pick
+if not @findtype '0xe86' '0' 'backpack'
+  @pushlist! 'controlz' 'pick'
+else
+  @poplist! 'controlz' 'pick'
+endif
+//*****************************************************************************
+//Journal checks
+//*****************************************************************************
+//Check for various types of errors having to due with the mining process
+for 0 to 'errorz'
+  if @injournal 'errorz[]' 'system'
+    @pushlist 'ecountz' 'count'
+    if @list 'ecountz' > 10
+      @pushlist! 'controlz' 'next'
+      @clearlist! 'ecountz'
+    endif
+  endif
+  pause 100
+endfor
+clearjournal
+//*****************************************************************************
+//+pick run supply
+//*****************************************************************************
+if @inlist 'controlz' 'pick'
+  playmacro 'rmsupply'
+endif
+//*****************************************************************************
+//+home/+supply run supply
+//*****************************************************************************
+if @inlist 'controlz' 'home'
+  if @inlist 'controlz' 'supply'
+    playmacro 'rmsupply'
+  endif
+endif
+//*****************************************************************************
+//+home/+full run supply
+//*****************************************************************************
+if @inlist 'controlz' 'home'
+  if @inlist 'controlz' 'full'
+    playmacro 'rmsupply'
+  endif
+endif
+//*****************************************************************************
+//-home/+danger run recall
+//*****************************************************************************
+if not @inlist 'controlz' 'home'
+  if @inlist 'controlz' 'danger'
+    playmacro 'rmrecall'
+  endif
+endif
+//*****************************************************************************
+//-home/+supply run recall
+//*****************************************************************************
+if not @inlist 'controlz' 'home'
+  if @inlist 'controlz' 'supply'
+    playmacro 'rmrecall'
+  endif
+endif
+//*****************************************************************************
+//+next run recall
+//*****************************************************************************
+if @inlist 'controlz' 'next'
+  playmacro 'rmrecall'
+endif
+//*****************************************************************************
+//-home run getore or +home run recall
+//*****************************************************************************
+if not @inlist 'controlz' 'home'
+  playmacro 'rmgetore'
+else
+  playmacro 'rmrecall'
+endif
+//*****************************************************************************
+//
+//*****************************************************************************
+
